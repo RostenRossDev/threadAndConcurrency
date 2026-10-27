@@ -1,6 +1,6 @@
 package com.example.useraggregation.basics;
 
-public class Tarea implements Runnable{
+public class Tarea implements Runnable {
 
     private Long createdAt;
     private Long start;
