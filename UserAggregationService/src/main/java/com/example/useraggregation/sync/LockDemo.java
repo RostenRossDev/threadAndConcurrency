@@ -38,10 +38,4 @@ public final class LockDemo {
         finally { rwLock.writeLock().unlock(); }
     }
 
-    public static void run() {
-        LockDemo demo = new LockDemo();
-        demo.deposit(50);
-        demo.updateConfiguration("v2");
-        System.out.println(demo.balance() + " / " + demo.readConfiguration());
-    }
 }

@@ -33,24 +33,12 @@ public class UserAggregationService implements AutoCloseable {
 
     public List<User> aggregate(List<Integer> ids) {
         String requestId = "req-" + System.nanoTime();
-
         // ScopedValue es estable desde Java 25. El binding se limita a este ámbito.
-        return RequestContext.withRequestId(requestId, () -> {
-            List<CompletableFuture<User>> futures = new ArrayList<>();
-            for (int id : ids) {
-                // Un ExecutorService común no propaga automáticamente ScopedValue.
-                // Pasamos requestId explícitamente a cada tarea asíncrona.
-                futures.add(CompletableFuture.supplyAsync(() -> loadUser(id, requestId), executor));
-            }
-
-            // allOf espera a que terminen todas. Si una falla, join propaga la excepción.
-            CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
-
-            return futures.stream().map(CompletableFuture::join).toList();
-        });
+        AgregateAction action  = new AgregateAction(this, ids);
+        return RequestContext.withRequestId(requestId, action);
     }
 
-    private User loadUser(int id, String requestId) {
+    public User loadUser(int id, String requestId) {
         User cached = cache.get(id);
         if (cached != null) {
             return cached;
@@ -85,6 +73,10 @@ public class UserAggregationService implements AutoCloseable {
         } finally {
             externalCallSlots.release();
         }
+    }
+
+    public ExecutorService getExecutor() {
+        return executor;
     }
 
     @Override

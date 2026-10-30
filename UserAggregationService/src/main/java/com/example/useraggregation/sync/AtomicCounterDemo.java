@@ -4,6 +4,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 public final class AtomicCounterDemo {
+
+    static void main() throws InterruptedException {
+        run();
+    }
+
     public static void run() throws InterruptedException {
         AtomicInteger exactCounter = new AtomicInteger();
         LongAdder highContentionMetric = new LongAdder();
@@ -12,12 +17,13 @@ public final class AtomicCounterDemo {
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(() -> {
                 for (int j = 0; j < 100_000; j++) {
-                    exactCounter.incrementAndGet();
+                    System.out.println("Hilo: " + Thread.currentThread().getName() + " valor: " + exactCounter.incrementAndGet());
                     highContentionMetric.increment();
                 }
             });
             threads[i].start();
         }
+
         for (Thread thread : threads) thread.join();
         System.out.println("AtomicInteger = " + exactCounter.get());
         System.out.println("LongAdder = " + highContentionMetric.sum());
